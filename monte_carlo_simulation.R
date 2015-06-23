@@ -10,9 +10,11 @@
 
 
 # Set working directory
-  setwd("e:/Hayden_Elza/Wetlands-Loss/")
+  setwd("e:/Hayden_Elza/Wetlands-Loss/data/")
   
 # Read in shapefiles for current and historical wetlands
+  historical_wetlands <- readOGR(getwd(), "PLS_Analysis3")
+  current_wetlands <- readOGR(getwd(), "WWI_Analysis3")
   
 # Introduce random error within dataset's spatial accuracy
   
