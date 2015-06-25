@@ -8,15 +8,31 @@ except:
 		print "Import of ogr/gdal failed."
 
 # Import other needed modules
-import numpy, os, sys, shutil, gdalconst
+import numpy, os, sys, shutil, gdalconst, csv
 
 
 # Set working directory
 path = os.path.dirname(__file__)
 
+#----------------
+# User Variables
+#----------------
+
+interations = 5
+
 # Set paths for datasets
 pls_path = os.path.join(path, "data/test_area/pls_wgs.shp")
 wwi_path = os.path.join(path, "data/test_area/wwi_wgs_dissolve.shp")
+
+# Create output folder, exit if it already exists
+output_dir = os.path.join(path,"output/")
+if not os.path.exists(output_dir):
+	os.makedirs(output_dir)
+else:
+	print output_dir,"already exits. Cannot ouput results there."
+	sys.exit(-1)
+
+#----------------
 
 
 # Addition of normally distributed error to data as a part of the Monte Carlo simulation
@@ -59,17 +75,6 @@ pls_layer = pls_source.GetLayer(0)
 # Feature count
 featureCount1 = pls_layer.GetFeatureCount()
 
-"""# Get feature
-feature2 = pls_layer.GetFeature(0)
-# Get feature geometry
-poly = feature2.GetGeometryRef()
-print poly
-# Get access to the layer's non-spatial info: number of fields, field names, field types, etc.
-featureDefn2 = pls_layer.GetLayerDefn()
-print featureDefn2
-# Get feature count
-fieldCount2 = featureDefn2.GetFieldCount()
-print fieldCount2"""
 
 #------------------
 # Prepare WWI data
@@ -93,13 +98,11 @@ wwi_layer = wwi_source.GetLayer(0)
 # Get one feature to get geom ref later
 wwi_feature = wwi_layer.GetFeature(0)
 
-# Feature count
-featureCount2 = wwi_layer.GetFeatureCount()
 
 #---------------------------
 # Prepare intersection data
 #---------------------------
-
+"""
 # Create temp folder
 temp_dir = os.path.join(path,"temp/")
 if not os.path.exists(temp_dir):
@@ -126,44 +129,61 @@ field_iter.SetWidth(6)
 pls_notlost.CreateField(field_iter)
 
 pls_notlost_def = pls_notlost.GetLayerDefn() # Every feature in layer will have this
+"""
 
-#----------------
-# Intoduce error
-#----------------
+for iteration in range(0,interations):
+	#----------------
+	# Intoduce error
+	#----------------
 
-#---------------------------------
-# PLS within/outside WWI wetlands
-#---------------------------------
-iteration = 1
-TrueCount = 0
-FalseCount = 0
-# Iterate through point features to find where points intersect WWI
-for i in range(0, featureCount1):
-	# Get PLS feature and set geom refs
-	point_feature = pls_layer.GetFeature(i)
-	point = point_feature.GetGeometryRef()
-	poly = wwi_feature.GetGeometryRef()
-	# Check if WWI intersects PLS point
-	cross = poly.Intersects(point)
-	# Count the number of intersects or nots
-	geometry = point_feature.GetGeometryRef()
-	if cross:
-		TrueCount = TrueCount + 1
-		# Add current PLS point to file
-		pls_notlost_feature = ogr.Feature(pls_notlost_def) # Create feature
-		pls_notlost_feature.SetGeometry(geometry)  		   # Add geometry
-		pls_notlost_feature.SetFID(i) 			           # Set id
-		#pls_notlost_feature.SetField("corn_id",str(point_feature.GetField("CORN_ID"))[:11])  # Set field to CORN_ID
-		#pls_notlost_feature.SetField("lost", 1)            # Set field lost to 1
-		#pls_notlost_feature.SetField("iter", iteration)    # Set field iter to iteration number
-		pls_notlost.CreateFeature(pls_notlost_feature) 	   # Add feature to layer
-	else:
-		FalseCount = FalseCount + 1
+	#---------------------------------
+	# PLS within/outside WWI wetlands
+	#---------------------------------
+	TrueCount = 0
+	FalseCount = 0
 
-# Diagonostic count
-print "Wetlands not lost:", TrueCount
-print "Wetlands lost:",FalseCount
-print "Total wetlands:",TrueCount+FalseCount
+	# Set ouput csv file
+	csv_path = os.path.join(path, "output/results_"+str(iteration)+".csv")
+	csv_out = open(csv_path,"a")
+
+	# Iterate through point features to find where points intersect WWI
+	for i in range(0, featureCount1):
+
+		# Get PLS feature and set geom refs
+		point_feature = pls_layer.GetFeature(i)
+		point = point_feature.GetGeometryRef()
+		poly = wwi_feature.GetGeometryRef()
+
+		# Check if WWI intersects PLS point
+		cross = poly.Intersects(point)
+
+		# Count the number of intersects or nots
+		geometry = point_feature.GetGeometryRef()
+		if cross:
+			TrueCount = TrueCount + 1
+
+			# Add line to csv
+			csv_out.write(str(point_feature.GetField("CORN_ID"))[:11]+",1,"+str(iteration)+"\n")
+
+			# Add current PLS point to file
+			"""pls_notlost_feature = ogr.Feature(pls_notlost_def) # Create feature
+			pls_notlost_feature.SetGeometry(geometry)  		   # Add geometry
+			pls_notlost_feature.SetFID(i) 			           # Set id
+			pls_notlost_feature.SetField("corn_id",str(point_feature.GetField("CORN_ID"))[:11])  # Set field to CORN_ID
+			pls_notlost_feature.SetField("lost", 1)            # Set field lost to 1
+			pls_notlost_feature.SetField("iter", iteration)    # Set field iter to iteration number
+			pls_notlost.CreateFeature(pls_notlost_feature) 	   # Add feature to layer"""
+			
+		else:
+			FalseCount = FalseCount + 1
+
+	# Diagonostic count
+	print "Wetlands not lost:", TrueCount
+	print "Wetlands lost:",FalseCount
+	print "Total wetlands:",TrueCount+FalseCount
+
+	# Close csv
+	csv_out.close()
 
 
 #---------------------------
@@ -180,4 +200,4 @@ dstshp = None
 pls_notlost = None
 pls_notlost_feature = None
 
-shutil.rmtree(temp_dir)
+#shutil.rmtree(temp_dir)
