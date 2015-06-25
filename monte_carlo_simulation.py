@@ -98,6 +98,9 @@ wwi_layer = wwi_source.GetLayer(0)
 # Get one feature to get geom ref later
 wwi_feature = wwi_layer.GetFeature(0)
 
+# Feature count
+featureCount2 = wwi_layer.GetFeatureCount()
+
 
 #---------------------------
 # Prepare intersection data
