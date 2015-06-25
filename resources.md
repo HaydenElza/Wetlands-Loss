@@ -1,7 +1,7 @@
 Resources for python script:
 - [Extract point from raster](http://pthelma.readthedocs.org/en/latest/dev/spatial.html#spatial.extract_point_from_raster)
 	
-	~~~
+	~~~ python
 	def extract_point_from_raster(point, data_source, band_number=1):
     """Return floating-point value that corresponds to given point."""
 
@@ -30,7 +30,7 @@ Resources for python script:
 
 - [Python – Extract raster data value at a point (*simple*)](https://waterprogramming.wordpress.com/2014/10/07/python-extract-raster-data-value-at-a-point/)
 	
-	~~~
+	~~~ python
 	from __future__ import division
 	from osgeo import gdal
 	from geopy.geocoders import Nominatim
