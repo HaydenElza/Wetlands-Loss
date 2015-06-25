@@ -131,6 +131,8 @@ pls_notlost.CreateField(field_iter)
 pls_notlost_def = pls_notlost.GetLayerDefn() # Every feature in layer will have this
 """
 
+print "Iteration\tLost\tNotLost\tTotal"
+
 for iteration in range(0,interations):
 	#----------------
 	# Intoduce error
@@ -173,14 +175,18 @@ for iteration in range(0,interations):
 			pls_notlost_feature.SetField("lost", 1)            # Set field lost to 1
 			pls_notlost_feature.SetField("iter", iteration)    # Set field iter to iteration number
 			pls_notlost.CreateFeature(pls_notlost_feature) 	   # Add feature to layer"""
-			
+
 		else:
 			FalseCount = FalseCount + 1
 
 	# Diagonostic count
+	"""
 	print "Wetlands not lost:", TrueCount
 	print "Wetlands lost:",FalseCount
 	print "Total wetlands:",TrueCount+FalseCount
+	"""
+	print str(iteration)+"\t"+str(TrueCount)+"\t"+str(FalseCount)+"\t"+str(TrueCount+FalseCount)
+
 
 	# Close csv
 	csv_out.close()
