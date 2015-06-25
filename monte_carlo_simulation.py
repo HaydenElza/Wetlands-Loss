@@ -56,13 +56,8 @@ if pls_source is None:
 # Get first layer
 pls_layer = pls_source.GetLayer(0)
 
-# Get one feature to get geom ref later
-pls_feature = pls_layer.GetFeature(0)
-
 # Feature count
 featureCount1 = pls_layer.GetFeatureCount()
-print featureCount1
-
 
 """# Get feature
 feature2 = pls_layer.GetFeature(0)
@@ -100,7 +95,6 @@ wwi_feature = wwi_layer.GetFeature(0)
 
 # Feature count
 featureCount2 = wwi_layer.GetFeatureCount()
-print featureCount2
 
 #---------------------------
 # Prepare intersection data
@@ -116,9 +110,20 @@ else:
 # Create shapefile
 dstshp = driver.CreateDataSource(os.path.join(temp_dir,"temp.shp"))
 pls_notlost = dstshp.CreateLayer('foolayer',geom_type=ogr.wkbPoint)
+
+# Validate creation
 if pls_notlost is None:
 	print "Could not create output layer."
 	sys.exit(-1)
+
+# Create fields
+field_corn_id = ogr.FieldDefn("corn_id", ogr.OFTString)
+field_corn_id.SetWidth(11)
+pls_notlost.CreateField(field_corn_id)
+pls_notlost.CreateField(ogr.FieldDefn("lost", ogr.OFTInteger))
+field_iter = ogr.FieldDefn("iter", ogr.OFTString)
+field_iter.SetWidth(6)
+pls_notlost.CreateField(field_iter)
 
 pls_notlost_def = pls_notlost.GetLayerDefn() # Every feature in layer will have this
 
@@ -129,7 +134,7 @@ pls_notlost_def = pls_notlost.GetLayerDefn() # Every feature in layer will have 
 #---------------------------------
 # PLS within/outside WWI wetlands
 #---------------------------------
-
+iteration = 1
 TrueCount = 0
 FalseCount = 0
 # Iterate through point features to find where points intersect WWI
@@ -145,10 +150,13 @@ for i in range(0, featureCount1):
 	if cross:
 		TrueCount = TrueCount + 1
 		# Add current PLS point to file
-		pls_notlost_feature = ogr.Feature(pls_notlost_def) #create feature
-		pls_notlost_feature.SetGeometry(geometry)  		   #add geometry
-		pls_notlost_feature.SetFID(i) 			           #set id
-		pls_notlost.CreateFeature(pls_notlost_feature) 	   #add feature to layer
+		pls_notlost_feature = ogr.Feature(pls_notlost_def) # Create feature
+		pls_notlost_feature.SetGeometry(geometry)  		   # Add geometry
+		pls_notlost_feature.SetFID(i) 			           # Set id
+		#pls_notlost_feature.SetField("corn_id",str(point_feature.GetField("CORN_ID"))[:11])  # Set field to CORN_ID
+		#pls_notlost_feature.SetField("lost", 1)            # Set field lost to 1
+		#pls_notlost_feature.SetField("iter", iteration)    # Set field iter to iteration number
+		pls_notlost.CreateFeature(pls_notlost_feature) 	   # Add feature to layer
 	else:
 		FalseCount = FalseCount + 1
 
@@ -172,4 +180,4 @@ dstshp = None
 pls_notlost = None
 pls_notlost_feature = None
 
-#shutil.rmtree(temp_dir)
+shutil.rmtree(temp_dir)

@@ -50,4 +50,5 @@ Resources for python script:
 	print get_value_at_point('path/to/my/raster/file', p)
 	~~~
 
-- 
+- [ogr geometry examples](https://pcjericks.github.io/py-gdalogr-cookbook/geometry.html)
+- [ogr geometry docs](http://www.gdal.org/classOGRGeometryCollection.html)
