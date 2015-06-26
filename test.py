@@ -100,7 +100,7 @@ featureCount2 = wwi_layer.GetFeatureCount()
 # Set variables
 #---------------
 pls_accuracy = 15.24/3  # Standard deviation of positional accuracy in meters
-
+wwi_accuracy = 5/3
 
 # Create temp folder
 temp_dir = os.path.join(path,"temp/")
@@ -116,8 +116,8 @@ else:
 #------------------------
 
 # Create shapefile
-dstshp = driver.CreateDataSource(os.path.join(temp_dir,"pls_prime.shp"))
-pls_prime = dstshp.CreateLayer('foolayer',geom_type=ogr.wkbPoint)
+pls_prime_dst = driver.CreateDataSource(os.path.join(temp_dir,"pls_prime.shp"))
+pls_prime = pls_prime_dst.CreateLayer('foolayer',geom_type=ogr.wkbPoint)
 
 # Validate creation
 if pls_prime is None:
@@ -136,8 +136,8 @@ pls_prime_def = pls_prime.GetLayerDefn() # Every feature in layer will have this
 #------------------------
 
 # Create shapefile
-dstshp = driver.CreateDataSource(os.path.join(temp_dir,"wwi_prime.shp"))
-wwi_prime = dstshp.CreateLayer('foolayer',geom_type=ogr.wkbPolygon)
+wwi_prime_dst = driver.CreateDataSource(os.path.join(temp_dir,"wwi_prime.shp"))
+wwi_prime = wwi_prime_dst.CreateLayer('foolayer',geom_type=ogr.wkbPolygon)
 
 # Validate creation
 if wwi_prime is None:
@@ -145,7 +145,8 @@ if wwi_prime is None:
 	sys.exit(-1)
 
 wwi_prime_def = wwi_prime.GetLayerDefn() # Every feature in layer will have this
-"""
+
+
 #--------------------
 # Simulate PLS prime
 #--------------------
@@ -160,67 +161,50 @@ for i in range(0, featureCount1):
 	x_prime = float(numpy.random.normal(point.GetX(),float(pls_accuracy),1))
 	y_prime = float(numpy.random.normal(point.GetY(),float(pls_accuracy),1))
 	point_prime.AddPoint(x_prime,y_prime)  # Add geometry
-	""""""
-	# Print orginal coords, new coords, and difference between the two
-	print "X ",point.GetX(),
-	print "\t\tY ",point.GetY()
-	print "X'",x_prime,
-	print "\tY'",y_prime
-	print "Dx",point.GetX()-x_prime,
-	print "\tDy",point.GetY()-y_prime
-	print ""
-	""""""
+	
 	# Create pls_prime geometry and fields
 	pls_prime_feature = ogr.Feature(pls_prime_def)  # Create empty feature
 	pls_prime_feature.SetGeometry(point_prime)  # Create geometry
 	pls_prime_feature.SetFID(i)  # Set fid
 	pls_prime_feature.SetField("corn_id",str(point_feature.GetField("CORN_ID"))[:11])  # Set field to CORN_ID
 	pls_prime.CreateFeature(pls_prime_feature)  # Add feature to layer
-"""
+
 #--------------------
 # Simulate WWI prime
 #--------------------
-for i in range(0, 5):
+# Iterate over each feature
+for i in range(0, featureCount2):
 	# Get WWI feature and set geom refs
 	poly_feature = wwi_layer.GetFeature(i)
 	poly = poly_feature.GetGeometryRef()
-	
-	for linearring in range(0,poly.GetGeometryCount()):
-		ring = poly.GetGeometryRef(linearring)
-		print ring
 
-		for point in range(0,ring.GetGeometryCount()):
-			pnt = ring.GetGeometryRef(point)
-			print pnt
-
-	print poly.GetGeometryType(),poly.GetGeometryCount()
-	point = poly.GetGeometryRef(0)
-	print point
-	print point.GetPointCount()
-	print ""
-
-"""	# Create poly_prime geometry
+	# Create empty polygon geometry
 	poly_prime = ogr.Geometry(ogr.wkbPolygon)
-	x_prime = float(numpy.random.normal(poly.GetX(),float(pls_accuracy),1))
-	y_prime = float(numpy.random.normal(poly.GetY(),float(pls_accuracy),1))
-	poly_prime.Addpoly(x_prime,y_prime)  # Add geometry
-	
-	# Print orginal coords, new coords, and difference between the two
-	print "X ",poly.GetX(),
-	print "\t\tY ",poly.GetY()
-	print "X'",x_prime,
-	print "\tY'",y_prime
-	print "Dx",poly.GetX()-x_prime,
-	print "\tDy",poly.GetY()-y_prime
-	print ""
-	
-	# Create pls_prime geometry and fields
-	pls_prime_feature = ogr.Feature(pls_prime_def)  # Create empty feature
-	pls_prime_feature.SetGeometry(point_prime)  # Create geometry
-	pls_prime_feature.SetFID(i)  # Set fid
-	pls_prime.CreateFeature(pls_prime_feature)  # Add feature to layer
-"""
+
+	# Iterate over each linear ring in polygon
+	for linearring in range(0,poly.GetGeometryCount()):
+		# Get each ring and create a prime ring to add prime points to
+		ring = poly.GetGeometryRef(linearring)
+		ring_prime = ogr.Geometry(ogr.wkbLinearRing)
+
+		# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+		for point in range(0,ring.GetPointCount()):
+			# Get coordinates from point
+			x,y,z = ring.GetPoint(point)
+			# Create new points randomly sampled from gaussian distribution
+			x_prime = float(numpy.random.normal(x,float(wwi_accuracy),1))
+			y_prime = float(numpy.random.normal(y,float(wwi_accuracy),1))
+			# Add new points to ring
+			ring_prime.AddPoint(x_prime,y_prime)
+
+		# Add new ring to polygon
+		poly_prime.AddGeometry(ring_prime)
+
+	# Write polygon to shapefile
+	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+	wwi_prime_feature.SetFID(i)  # Set fid
+	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
 
 
-
-shutil.rmtree(temp_dir)
+#shutil.rmtree(temp_dir)
