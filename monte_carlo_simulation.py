@@ -14,11 +14,17 @@ import numpy, os, sys, shutil, gdalconst, csv
 #----------------
 # User Variables
 #----------------
-interations = 5
+interations = 1
 pls_accuracy = 15.24/3  # Standard deviation of positional accuracy in meters
-wwi_accuracy = 5/3
+wwi_ortho_accuracy = 5/3
+wwi_nonortho_accuracy = 15/3
+nwi_lacrosse_accuracy = 6/3
+nwi_others_accuracy = 15/3
 pls_path = "data/test_area/pls.shp"
-wwi_path = "data/test_area/wwi_dissolve_simp.shp"
+wwi_ortho_path = "data/test_area/wwi_dissolve_simp.shp"
+wwi_nonortho_path = "data/test_area/wwi_dissolve_simp_2.0.shp"
+nwi_lacrosse_path = "data/test_area/wwi_dissolve_simp_2.0.shp"
+nwi_others_path = "data/test_area/wwi_dissolve_simp_2.0.shp"
 output_dir = "output/"
 suppress_ogr_errors = True  # ogr.IsValid() is used to check for valid geom and causes many warnings, suppressing them should increase speed, use False for debug
 #----------------
@@ -29,7 +35,10 @@ path = os.path.dirname(__file__)
 
 # Set paths for datasets
 pls_path = os.path.join(path, pls_path)
-wwi_path = os.path.join(path, wwi_path)
+wwi_ortho_path = os.path.join(path, wwi_ortho_path)
+wwi_nonortho_path = os.path.join(path, wwi_nonortho_path)
+nwi_lacrosse_path = os.path.join(path, nwi_lacrosse_path)
+nwi_others_path = os.path.join(path, nwi_others_path)
 
 # Create output folder, exit if it already exists
 output_dir = os.path.join(path, output_dir)
@@ -53,7 +62,7 @@ if suppress_ogr_errors: gdal.PushErrorHandler('CPLQuietErrorHandler')
 
 # Check if file exists
 if not os.path.isfile(pls_path):
-	print "File does not exist."
+	print "PLS does not exist."
 
 # Get appropriate driver
 driver = ogr.GetDriverByName('ESRI Shapefile')
@@ -73,64 +82,109 @@ pls_layer = pls_source.GetLayer(0)
 featureCount1 = pls_layer.GetFeatureCount()
 
 
-#------------------
-# Prepare WWI data
-#------------------
+#------------------------
+# Prepare WWI ortho data
+#------------------------
 
 # Check if file exists
-if not os.path.isfile(wwi_path):
-	print "File does not exist."
+if not os.path.isfile(wwi_ortho_path):
+	print "WWI Ortho does not exist."
 
 # Open the file using the driver
-wwi_source = driver.Open(wwi_path, gdalconst.GA_ReadOnly)
+wwi_ortho_source = driver.Open(wwi_ortho_path, gdalconst.GA_ReadOnly)
 
 # Verify if the file was opened, if not exit
-if wwi_source is None:
+if wwi_ortho_source is None:
 	print 'Failed to open file'
 	sys.exit(-1)
 
 # Get first layer
-wwi_layer = wwi_source.GetLayer(0)
+wwi_ortho_layer = wwi_ortho_source.GetLayer(0)
 
 # Get one feature to get geom ref later
-wwi_feature = wwi_layer.GetFeature(0)
+wwi_ortho_feature = wwi_ortho_layer.GetFeature(0)
 
 # Feature count
-featureCount2 = wwi_layer.GetFeatureCount()
+featureCount2 = wwi_ortho_layer.GetFeatureCount()
 
 
 #---------------------------
-# Prepare intersection data
+# Prepare WWI nonortho data
 #---------------------------
-"""
-# Create temp folder
-temp_dir = os.path.join(path,"temp/")
-if not os.path.exists(temp_dir):
-	os.makedirs(temp_dir)
-else:
-	print temp_dir,"already exits. Please remove or rename."
 
-# Create shapefile
-dstshp = driver.CreateDataSource(os.path.join(temp_dir,"temp.shp"))
-pls_notlost = dstshp.CreateLayer('foolayer',geom_type=ogr.wkbPoint)
+# Check if file exists
+if not os.path.isfile(wwi_nonortho_path):
+	print "WWI NonOrtho does not exist."
 
-# Validate creation
-if pls_notlost is None:
-	print "Could not create output layer."
+# Open the file using the driver
+wwi_nonortho_source = driver.Open(wwi_nonortho_path, gdalconst.GA_ReadOnly)
+
+# Verify if the file was opened, if not exit
+if wwi_nonortho_source is None:
+	print 'Failed to open file'
 	sys.exit(-1)
 
-# Create fields
-field_corn_id = ogr.FieldDefn("corn_id", ogr.OFTString)
-field_corn_id.SetWidth(11)
-pls_notlost.CreateField(field_corn_id)
-pls_notlost.CreateField(ogr.FieldDefn("lost", ogr.OFTInteger))
-field_iter = ogr.FieldDefn("iter", ogr.OFTString)
-field_iter.SetWidth(6)
-pls_notlost.CreateField(field_iter)
+# Get first layer
+wwi_nonortho_layer = wwi_nonortho_source.GetLayer(0)
 
-pls_notlost_def = pls_notlost.GetLayerDefn() # Every feature in layer will have this
-"""
+# Get one feature to get geom ref later
+wwi_nonortho_feature = wwi_ortho_layer.GetFeature(0)
 
+# Feature count
+featureCount3 = wwi_nonortho_layer.GetFeatureCount()
+
+#----------------------------
+# Prepare NWI La Crosse data
+#----------------------------
+
+# Check if file exists
+if not os.path.isfile(nwi_lacrosse_path):
+	print "NWI lacrosse does not exist."
+
+# Open the file using the driver
+nwi_lacrosse_source = driver.Open(nwi_lacrosse_path, gdalconst.GA_ReadOnly)
+
+# Verify if the file was opened, if not exit
+if nwi_lacrosse_source is None:
+	print 'Failed to open file'
+	sys.exit(-1)
+
+# Get first layer
+nwi_lacrosse_layer = nwi_lacrosse_source.GetLayer(0)
+
+# Get one feature to get geom ref later
+nwi_lacrosse_feature = nwi_lacrosse_layer.GetFeature(0)
+
+# Feature count
+featureCount4 = nwi_lacrosse_layer.GetFeatureCount()
+
+#-------------------------
+# Prepare NWI Others data
+#-------------------------
+
+# Check if file exists
+if not os.path.isfile(nwi_others_path):
+	print "NWI others does not exist."
+
+# Open the file using the driver
+nwi_others_source = driver.Open(nwi_others_path, gdalconst.GA_ReadOnly)
+
+# Verify if the file was opened, if not exit
+if nwi_others_source is None:
+	print 'Failed to open file'
+	sys.exit(-1)
+
+# Get first layer
+nwi_others_layer = nwi_others_source.GetLayer(0)
+
+# Get one feature to get geom ref later
+nwi_others_feature = nwi_others_layer.GetFeature(0)
+
+# Feature count
+featureCount5 = nwi_others_layer.GetFeatureCount()
+
+
+# Iteration summary header
 print "Iteration\tLost\tNotLost\tTotal"
 
 for iteration in range(0,interations):
@@ -166,7 +220,7 @@ for iteration in range(0,interations):
 	pls_prime_def = pls_prime.GetLayerDefn() # Every feature in layer will have this
 
 	#------------------------
-	# Prepare prime WWI data
+	# Prepare WWI prime data
 	#------------------------
 
 	# Create shapefile
@@ -179,6 +233,9 @@ for iteration in range(0,interations):
 		sys.exit(-1)
 
 	wwi_prime_def = wwi_prime.GetLayerDefn() # Every feature in layer will have this
+
+	fid = 0  # This is to track the FID between both ortho and nonortho datasets
+
 
 	#--------------------
 	# Simulate PLS prime
@@ -202,13 +259,13 @@ for iteration in range(0,interations):
 		pls_prime_feature.SetField("corn_id",str(point_feature.GetField("CORN_ID"))[:11])  # Set field to CORN_ID
 		pls_prime.CreateFeature(pls_prime_feature)  # Add feature to layer
 
-	#--------------------
-	# Simulate WWI prime
-	#--------------------
+	#--------------------------
+	# Simulate WWI ortho prime
+	#--------------------------
 	# Iterate over each feature
 	for i in range(0, featureCount2):
 		# Get WWI feature and set geom refs
-		poly_feature = wwi_layer.GetFeature(i)
+		poly_feature = wwi_ortho_layer.GetFeature(i)
 		multipoly = poly_feature.GetGeometryRef()
 
 		# Create empty polygon geometry
@@ -233,8 +290,8 @@ for iteration in range(0,interations):
 						# Get coordinates from point
 						x,y,z = ring.GetPoint(point)
 						# Create new points randomly sampled from gaussian distribution
-						x_prime = float(numpy.random.normal(x,float(wwi_accuracy),1))
-						y_prime = float(numpy.random.normal(y,float(wwi_accuracy),1))
+						x_prime = float(numpy.random.normal(x,float(wwi_ortho_accuracy),1))
+						y_prime = float(numpy.random.normal(y,float(wwi_ortho_accuracy),1))
 						# Add new points to ring
 						ring_prime.AddPoint(x_prime,y_prime)
 
@@ -250,8 +307,168 @@ for iteration in range(0,interations):
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
 		wwi_prime_feature.SetGeometry(multipoly_prime)  # Create geometry
-		wwi_prime_feature.SetFID(i)  # Set fid
+		wwi_prime_feature.SetFID(fid)  # Set fid
 		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+		fid += 1  # Add one to the fid
+	
+	wwi_prime_feature = None
+	#-----------------------------
+	# Simulate WWI nonortho prime
+	#-----------------------------
+	# Iterate over each feature
+	for i in range(0, featureCount3):
+		# Get WWI feature and set geom refs
+		poly_feature = wwi_nonortho_layer.GetFeature(i)
+		multipoly = poly_feature.GetGeometryRef()
+
+		# Create empty polygon geometry
+		multipoly_prime = ogr.Geometry(ogr.wkbMultiPolygon)
+
+		for polygon in range(0,multipoly.GetGeometryCount()):
+			valid = False
+			while (not valid):
+				poly_prime = None
+				# Iterate over each linear ring in polygon
+				poly = multipoly.GetGeometryRef(polygon)
+				poly_prime = ogr.Geometry(ogr.wkbPolygon)
+
+				# Iterate over each linear ring in polygon
+				for linearring in range(0,poly.GetGeometryCount()):
+					# Get each ring and create a prime ring to add prime points to
+					ring = poly.GetGeometryRef(linearring)
+					ring_prime = ogr.Geometry(ogr.wkbLinearRing)
+
+					# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+					for point in range(0,ring.GetPointCount()):
+						# Get coordinates from point
+						x,y,z = ring.GetPoint(point)
+						# Create new points randomly sampled from gaussian distribution
+						x_prime = float(numpy.random.normal(x,float(wwi_nonortho_accuracy),1))
+						y_prime = float(numpy.random.normal(y,float(wwi_nonortho_accuracy),1))
+						# Add new points to ring
+						ring_prime.AddPoint(x_prime,y_prime)
+
+					# Close new ring and add to polygon
+					ring_prime.CloseRings()
+					poly_prime.AddGeometry(ring_prime)
+
+				valid = poly_prime.IsValid()
+
+			# Add new poly to multipoly
+			multipoly_prime.AddGeometry(poly_prime)
+
+		# Write polygon to shapefile
+		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+		wwi_prime_feature.SetGeometry(multipoly_prime)  # Create geometry
+		wwi_prime_feature.SetFID(fid)  # Set fid
+		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+		fid += 1  # Add one to the fid
+
+	wwi_prime_feature = None
+	#------------------------------
+	# Simulate NWI La Crosse prime
+	#------------------------------
+	# Iterate over each feature
+	for i in range(0, featureCount4):
+		# Get WWI feature and set geom refs
+		poly_feature = nwi_lacrosse_layer.GetFeature(i)
+		multipoly = poly_feature.GetGeometryRef()
+
+		# Create empty polygon geometry
+		multipoly_prime = ogr.Geometry(ogr.wkbMultiPolygon)
+
+		for polygon in range(0,multipoly.GetGeometryCount()):
+			valid = False
+			while (not valid):
+				poly_prime = None
+				# Iterate over each linear ring in polygon
+				poly = multipoly.GetGeometryRef(polygon)
+				poly_prime = ogr.Geometry(ogr.wkbPolygon)
+
+				# Iterate over each linear ring in polygon
+				for linearring in range(0,poly.GetGeometryCount()):
+					# Get each ring and create a prime ring to add prime points to
+					ring = poly.GetGeometryRef(linearring)
+					ring_prime = ogr.Geometry(ogr.wkbLinearRing)
+
+					# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+					for point in range(0,ring.GetPointCount()):
+						# Get coordinates from point
+						x,y,z = ring.GetPoint(point)
+						# Create new points randomly sampled from gaussian distribution
+						x_prime = float(numpy.random.normal(x,float(nwi_lacrosse_accuracy),1))
+						y_prime = float(numpy.random.normal(y,float(nwi_lacrosse_accuracy),1))
+						# Add new points to ring
+						ring_prime.AddPoint(x_prime,y_prime)
+
+					# Close new ring and add to polygon
+					ring_prime.CloseRings()
+					poly_prime.AddGeometry(ring_prime)
+
+				valid = poly_prime.IsValid()
+
+			# Add new poly to multipoly
+			multipoly_prime.AddGeometry(poly_prime)
+
+		# Write polygon to shapefile
+		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+		wwi_prime_feature.SetGeometry(multipoly_prime)  # Create geometry
+		wwi_prime_feature.SetFID(fid)  # Set fid
+		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+		fid += 1  # Add one to the fid
+
+	wwi_prime_feature = None
+	#------------------------------
+	# Simulate NWI Others prime
+	#------------------------------
+	# Iterate over each feature
+	for i in range(0, featureCount5):
+		# Get WWI feature and set geom refs
+		poly_feature = nwi_others_layer.GetFeature(i)
+		multipoly = poly_feature.GetGeometryRef()
+
+		# Create empty polygon geometry
+		multipoly_prime = ogr.Geometry(ogr.wkbMultiPolygon)
+
+		for polygon in range(0,multipoly.GetGeometryCount()):
+			valid = False
+			while (not valid):
+				poly_prime = None
+				# Iterate over each linear ring in polygon
+				poly = multipoly.GetGeometryRef(polygon)
+				poly_prime = ogr.Geometry(ogr.wkbPolygon)
+
+				# Iterate over each linear ring in polygon
+				for linearring in range(0,poly.GetGeometryCount()):
+					# Get each ring and create a prime ring to add prime points to
+					ring = poly.GetGeometryRef(linearring)
+					ring_prime = ogr.Geometry(ogr.wkbLinearRing)
+
+					# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+					for point in range(0,ring.GetPointCount()):
+						# Get coordinates from point
+						x,y,z = ring.GetPoint(point)
+						# Create new points randomly sampled from gaussian distribution
+						x_prime = float(numpy.random.normal(x,float(nwi_others_accuracy),1))
+						y_prime = float(numpy.random.normal(y,float(nwi_others_accuracy),1))
+						# Add new points to ring
+						ring_prime.AddPoint(x_prime,y_prime)
+
+					# Close new ring and add to polygon
+					ring_prime.CloseRings()
+					poly_prime.AddGeometry(ring_prime)
+
+				valid = poly_prime.IsValid()
+
+			# Add new poly to multipoly
+			multipoly_prime.AddGeometry(poly_prime)
+
+		# Write polygon to shapefile
+		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+		wwi_prime_feature.SetGeometry(multipoly_prime)  # Create geometry
+		wwi_prime_feature.SetFID(fid)  # Set fid
+		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+		fid += 1  # Add one to the fid
 
 	# End introduce error ----------------------------------------------------------
 
@@ -285,24 +502,10 @@ for iteration in range(0,interations):
 			# Add line to csv
 			csv_out.write(str(point_feature.GetField("CORN_ID"))[:11]+",1,"+str(iteration)+"\n")
 
-			# Add current PLS point to file
-			"""pls_notlost_feature = ogr.Feature(pls_notlost_def) # Create feature
-			pls_notlost_feature.SetGeometry(geometry)  		   # Add geometry
-			pls_notlost_feature.SetFID(i) 			           # Set id
-			pls_notlost_feature.SetField("corn_id",str(point_feature.GetField("CORN_ID"))[:11])  # Set field to CORN_ID
-			pls_notlost_feature.SetField("lost", 1)            # Set field lost to 1
-			pls_notlost_feature.SetField("iter", iteration)    # Set field iter to iteration number
-			pls_notlost.CreateFeature(pls_notlost_feature) 	   # Add feature to layer"""
-
 		else:
 			FalseCount = FalseCount + 1
 
-	# Diagonostic count
-	"""
-	print "Wetlands not lost:", TrueCount
-	print "Wetlands lost:",FalseCount
-	print "Total wetlands:",TrueCount+FalseCount
-	"""
+	# Iteration summary
 	print str(iteration)+"\t"+str(TrueCount)+"\t"+str(FalseCount)+"\t"+str(TrueCount+FalseCount)
 
 
@@ -310,7 +513,7 @@ for iteration in range(0,interations):
 	csv_out.close()
 
 	# Remove temp directory
-	shutil.rmtree(temp_dir)
+	#shutil.rmtree(temp_dir)
 
 	# Free memory
 	pls_prime_dst = None
@@ -326,12 +529,16 @@ for iteration in range(0,interations):
 
 
 # Free memory
-wwi_source = None
-wwi_layer = None
+wwi_ortho_source = None
+wwi_ortho_layer = None
+wwi_nonortho_source = None
+wwi_nonortho_layer = None
+nwi_lacrosse_source = None
+nwi_lacrosse_layer = None
+nwi_others_source = None
+nwi_others_layer = None
 pls_source = None
 pls_layer = None
 dstshp = None
 pls_notlost = None
 pls_notlost_feature = None
-
-#shutil.rmtree(temp_dir)
