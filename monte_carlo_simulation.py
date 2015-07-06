@@ -20,13 +20,13 @@ wwi_ortho_accuracy = 5/3
 wwi_nonortho_accuracy = 15/3
 nwi_lacrosse_accuracy = 6/3
 nwi_others_accuracy = 15/3
-pls_path = "data/test_area/pls.shp"
-wwi_ortho_path = "data/test_area/wwi_dissolve_simp.shp"
-wwi_nonortho_path = "data/test_area/wwi_dissolve_simp_2.0.shp"
-nwi_lacrosse_path = "data/test_area/wwi_dissolve_simp_2.0.shp"
-nwi_others_path = "data/test_area/wwi_dissolve_simp_2.0.shp"
+pls_path = "data/PLS_Analysis3.shp"
+wwi_ortho_path = "data/test_state/wwi_ortho.shp"
+wwi_nonortho_path = "data/test_state/wwi_nonortho.shp"
+nwi_lacrosse_path = "data/test_state/nwi_lacrosse.shp"
+nwi_others_path = "data/test_state/nwi_others.shp"
 output_dir = "output/"
-suppress_ogr_errors = True  # ogr.IsValid() is used to check for valid geom and causes many warnings, suppressing them should increase speed, use False for debug
+suppress_ogr_errors = False  # ogr.IsValid() is used to check for valid geom and causes many warnings, suppressing them should increase speed, use False for debug
 #----------------
 
 
