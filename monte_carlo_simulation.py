@@ -20,18 +20,18 @@ wwi_ortho_accuracy = 5/3
 wwi_nonortho_accuracy = 15/3
 nwi_lacrosse_accuracy = 6/3
 nwi_others_accuracy = 15/3
-pls_path = "data/PLS_Analysis3.shp"
-wwi_ortho_path = "data/test_state/wwi_ortho.shp"
-wwi_nonortho_path = "data/test_state/wwi_nonortho.shp"
-nwi_lacrosse_path = "data/test_state/nwi_lacrosse.shp"
-nwi_others_path = "data/test_state/nwi_others.shp"
+pls_path = "temp2/pls.shp"
+wwi_ortho_path = "temp2/wwi_ortho_dissolve2_simp1.0.shp"
+wwi_nonortho_path = "temp2/wwi_nonortho_dissolve2_simp20.0.shp"
+nwi_lacrosse_path = "temp2/nwi_lacrosse_dissolve2_simp1.0.shp"
+nwi_others_path = "temp2/nwi_others_dissolve2_simp20.0.shp"
 output_dir = "output/"
-suppress_ogr_errors = False  # ogr.IsValid() is used to check for valid geom and causes many warnings, suppressing them should increase speed, use False for debug
+suppress_ogr_errors = True  # ogr.IsValid() is used to check for valid geom and causes many warnings, suppressing them should increase speed, use False for debug
 #----------------
 
 
 # Set working directory
-path = os.path.dirname(__file__)
+path = sys.path[0]
 
 # Set paths for datasets
 pls_path = os.path.join(path, pls_path)
@@ -263,53 +263,45 @@ for iteration in range(0,interations):
 	# Simulate WWI ortho prime
 	#--------------------------
 	# Iterate over each feature
-	for i in range(0, featureCount2):
+	for i in range(0,featureCount2):
 		# Get WWI feature and set geom refs
 		poly_feature = wwi_ortho_layer.GetFeature(i)
-		multipoly = poly_feature.GetGeometryRef()
+		poly = poly_feature.GetGeometryRef()
+		
+		valid = False
+		while (not valid):
+			poly_prime = None
+			# Iterate over each linear ring in polygon
+			poly_prime = ogr.Geometry(ogr.wkbPolygon)
 
-		# Create empty polygon geometry
-		multipoly_prime = ogr.Geometry(ogr.wkbMultiPolygon)
+			# Iterate over each linear ring in polygon
+			for linearring in range(0,poly.GetGeometryCount()):
+				# Get each ring and create a prime ring to add prime points to
+				ring = poly.GetGeometryRef(linearring)
+				ring_prime = ogr.Geometry(ogr.wkbLinearRing)
 
-		for polygon in range(0,multipoly.GetGeometryCount()):
-			valid = False
-			while (not valid):
-				poly_prime = None
-				# Iterate over each linear ring in polygon
-				poly = multipoly.GetGeometryRef(polygon)
-				poly_prime = ogr.Geometry(ogr.wkbPolygon)
+				# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+				for point in range(0,ring.GetPointCount()):
+					# Get coordinates from point
+					x,y,z = ring.GetPoint(point)
+					# Create new points randomly sampled from gaussian distribution
+					x_prime = float(numpy.random.normal(x,float(wwi_ortho_accuracy),1))
+					y_prime = float(numpy.random.normal(y,float(wwi_ortho_accuracy),1))
+					# Add new points to ring
+					ring_prime.AddPoint(x_prime,y_prime)
 
-				# Iterate over each linear ring in polygon
-				for linearring in range(0,poly.GetGeometryCount()):
-					# Get each ring and create a prime ring to add prime points to
-					ring = poly.GetGeometryRef(linearring)
-					ring_prime = ogr.Geometry(ogr.wkbLinearRing)
+				# Close new ring and add to polygon
+				ring_prime.CloseRings()
+				poly_prime.AddGeometry(ring_prime)
 
-					# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-					for point in range(0,ring.GetPointCount()):
-						# Get coordinates from point
-						x,y,z = ring.GetPoint(point)
-						# Create new points randomly sampled from gaussian distribution
-						x_prime = float(numpy.random.normal(x,float(wwi_ortho_accuracy),1))
-						y_prime = float(numpy.random.normal(y,float(wwi_ortho_accuracy),1))
-						# Add new points to ring
-						ring_prime.AddPoint(x_prime,y_prime)
+			valid = poly_prime.IsValid()
 
-					# Close new ring and add to polygon
-					ring_prime.CloseRings()
-					poly_prime.AddGeometry(ring_prime)
-
-				valid = poly_prime.IsValid()
-
-			# Add new poly to multipoly
-			multipoly_prime.AddGeometry(poly_prime)
-
-		# Write polygon to shapefile
-		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
-		wwi_prime_feature.SetGeometry(multipoly_prime)  # Create geometry
-		wwi_prime_feature.SetFID(fid)  # Set fid
-		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
-		fid += 1  # Add one to the fid
+	# Write polygon to shapefile
+	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+	wwi_prime_feature.SetFID(fid)  # Set fid
+	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+	fid += 1  # Add one to the fid
 	
 	wwi_prime_feature = None
 	#-----------------------------
@@ -319,50 +311,42 @@ for iteration in range(0,interations):
 	for i in range(0, featureCount3):
 		# Get WWI feature and set geom refs
 		poly_feature = wwi_nonortho_layer.GetFeature(i)
-		multipoly = poly_feature.GetGeometryRef()
+		poly = poly_feature.GetGeometryRef()
+		
+		valid = False
+		while (not valid):
+			poly_prime = None
+			# Iterate over each linear ring in polygon
+			poly_prime = ogr.Geometry(ogr.wkbPolygon)
 
-		# Create empty polygon geometry
-		multipoly_prime = ogr.Geometry(ogr.wkbMultiPolygon)
+			# Iterate over each linear ring in polygon
+			for linearring in range(0,poly.GetGeometryCount()):
+				# Get each ring and create a prime ring to add prime points to
+				ring = poly.GetGeometryRef(linearring)
+				ring_prime = ogr.Geometry(ogr.wkbLinearRing)
 
-		for polygon in range(0,multipoly.GetGeometryCount()):
-			valid = False
-			while (not valid):
-				poly_prime = None
-				# Iterate over each linear ring in polygon
-				poly = multipoly.GetGeometryRef(polygon)
-				poly_prime = ogr.Geometry(ogr.wkbPolygon)
+				# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+				for point in range(0,ring.GetPointCount()):
+					# Get coordinates from point
+					x,y,z = ring.GetPoint(point)
+					# Create new points randomly sampled from gaussian distribution
+					x_prime = float(numpy.random.normal(x,float(wwi_ortho_accuracy),1))
+					y_prime = float(numpy.random.normal(y,float(wwi_ortho_accuracy),1))
+					# Add new points to ring
+					ring_prime.AddPoint(x_prime,y_prime)
 
-				# Iterate over each linear ring in polygon
-				for linearring in range(0,poly.GetGeometryCount()):
-					# Get each ring and create a prime ring to add prime points to
-					ring = poly.GetGeometryRef(linearring)
-					ring_prime = ogr.Geometry(ogr.wkbLinearRing)
+				# Close new ring and add to polygon
+				ring_prime.CloseRings()
+				poly_prime.AddGeometry(ring_prime)
 
-					# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-					for point in range(0,ring.GetPointCount()):
-						# Get coordinates from point
-						x,y,z = ring.GetPoint(point)
-						# Create new points randomly sampled from gaussian distribution
-						x_prime = float(numpy.random.normal(x,float(wwi_nonortho_accuracy),1))
-						y_prime = float(numpy.random.normal(y,float(wwi_nonortho_accuracy),1))
-						# Add new points to ring
-						ring_prime.AddPoint(x_prime,y_prime)
+			valid = poly_prime.IsValid()
 
-					# Close new ring and add to polygon
-					ring_prime.CloseRings()
-					poly_prime.AddGeometry(ring_prime)
-
-				valid = poly_prime.IsValid()
-
-			# Add new poly to multipoly
-			multipoly_prime.AddGeometry(poly_prime)
-
-		# Write polygon to shapefile
-		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
-		wwi_prime_feature.SetGeometry(multipoly_prime)  # Create geometry
-		wwi_prime_feature.SetFID(fid)  # Set fid
-		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
-		fid += 1  # Add one to the fid
+	# Write polygon to shapefile
+	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+	wwi_prime_feature.SetFID(fid)  # Set fid
+	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+	fid += 1  # Add one to the fid
 
 	wwi_prime_feature = None
 	#------------------------------
@@ -372,50 +356,42 @@ for iteration in range(0,interations):
 	for i in range(0, featureCount4):
 		# Get WWI feature and set geom refs
 		poly_feature = nwi_lacrosse_layer.GetFeature(i)
-		multipoly = poly_feature.GetGeometryRef()
+		poly = poly_feature.GetGeometryRef()
+		
+		valid = False
+		while (not valid):
+			poly_prime = None
+			# Iterate over each linear ring in polygon
+			poly_prime = ogr.Geometry(ogr.wkbPolygon)
 
-		# Create empty polygon geometry
-		multipoly_prime = ogr.Geometry(ogr.wkbMultiPolygon)
+			# Iterate over each linear ring in polygon
+			for linearring in range(0,poly.GetGeometryCount()):
+				# Get each ring and create a prime ring to add prime points to
+				ring = poly.GetGeometryRef(linearring)
+				ring_prime = ogr.Geometry(ogr.wkbLinearRing)
 
-		for polygon in range(0,multipoly.GetGeometryCount()):
-			valid = False
-			while (not valid):
-				poly_prime = None
-				# Iterate over each linear ring in polygon
-				poly = multipoly.GetGeometryRef(polygon)
-				poly_prime = ogr.Geometry(ogr.wkbPolygon)
+				# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+				for point in range(0,ring.GetPointCount()):
+					# Get coordinates from point
+					x,y,z = ring.GetPoint(point)
+					# Create new points randomly sampled from gaussian distribution
+					x_prime = float(numpy.random.normal(x,float(wwi_ortho_accuracy),1))
+					y_prime = float(numpy.random.normal(y,float(wwi_ortho_accuracy),1))
+					# Add new points to ring
+					ring_prime.AddPoint(x_prime,y_prime)
 
-				# Iterate over each linear ring in polygon
-				for linearring in range(0,poly.GetGeometryCount()):
-					# Get each ring and create a prime ring to add prime points to
-					ring = poly.GetGeometryRef(linearring)
-					ring_prime = ogr.Geometry(ogr.wkbLinearRing)
+				# Close new ring and add to polygon
+				ring_prime.CloseRings()
+				poly_prime.AddGeometry(ring_prime)
 
-					# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-					for point in range(0,ring.GetPointCount()):
-						# Get coordinates from point
-						x,y,z = ring.GetPoint(point)
-						# Create new points randomly sampled from gaussian distribution
-						x_prime = float(numpy.random.normal(x,float(nwi_lacrosse_accuracy),1))
-						y_prime = float(numpy.random.normal(y,float(nwi_lacrosse_accuracy),1))
-						# Add new points to ring
-						ring_prime.AddPoint(x_prime,y_prime)
+			valid = poly_prime.IsValid()
 
-					# Close new ring and add to polygon
-					ring_prime.CloseRings()
-					poly_prime.AddGeometry(ring_prime)
-
-				valid = poly_prime.IsValid()
-
-			# Add new poly to multipoly
-			multipoly_prime.AddGeometry(poly_prime)
-
-		# Write polygon to shapefile
-		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
-		wwi_prime_feature.SetGeometry(multipoly_prime)  # Create geometry
-		wwi_prime_feature.SetFID(fid)  # Set fid
-		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
-		fid += 1  # Add one to the fid
+	# Write polygon to shapefile
+	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+	wwi_prime_feature.SetFID(fid)  # Set fid
+	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+	fid += 1  # Add one to the fid
 
 	wwi_prime_feature = None
 	#------------------------------
@@ -424,51 +400,43 @@ for iteration in range(0,interations):
 	# Iterate over each feature
 	for i in range(0, featureCount5):
 		# Get WWI feature and set geom refs
-		poly_feature = nwi_others_layer.GetFeature(i)
-		multipoly = poly_feature.GetGeometryRef()
+		poly = poly_feature.GetGeometryRef()
+		
+		valid = False
+		while (not valid):
+			poly_prime = None
+			# Iterate over each linear ring in polygon
+			poly = multipoly.GetGeometryRef(i)
+			poly_prime = ogr.Geometry(ogr.wkbPolygon)
 
-		# Create empty polygon geometry
-		multipoly_prime = ogr.Geometry(ogr.wkbMultiPolygon)
+			# Iterate over each linear ring in polygon
+			for linearring in range(0,poly.GetGeometryCount()):
+				# Get each ring and create a prime ring to add prime points to
+				ring = poly.GetGeometryRef(linearring)
+				ring_prime = ogr.Geometry(ogr.wkbLinearRing)
 
-		for polygon in range(0,multipoly.GetGeometryCount()):
-			valid = False
-			while (not valid):
-				poly_prime = None
-				# Iterate over each linear ring in polygon
-				poly = multipoly.GetGeometryRef(polygon)
-				poly_prime = ogr.Geometry(ogr.wkbPolygon)
+				# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+				for point in range(0,ring.GetPointCount()):
+					# Get coordinates from point
+					x,y,z = ring.GetPoint(point)
+					# Create new points randomly sampled from gaussian distribution
+					x_prime = float(numpy.random.normal(x,float(wwi_ortho_accuracy),1))
+					y_prime = float(numpy.random.normal(y,float(wwi_ortho_accuracy),1))
+					# Add new points to ring
+					ring_prime.AddPoint(x_prime,y_prime)
 
-				# Iterate over each linear ring in polygon
-				for linearring in range(0,poly.GetGeometryCount()):
-					# Get each ring and create a prime ring to add prime points to
-					ring = poly.GetGeometryRef(linearring)
-					ring_prime = ogr.Geometry(ogr.wkbLinearRing)
+				# Close new ring and add to polygon
+				ring_prime.CloseRings()
+				poly_prime.AddGeometry(ring_prime)
 
-					# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-					for point in range(0,ring.GetPointCount()):
-						# Get coordinates from point
-						x,y,z = ring.GetPoint(point)
-						# Create new points randomly sampled from gaussian distribution
-						x_prime = float(numpy.random.normal(x,float(nwi_others_accuracy),1))
-						y_prime = float(numpy.random.normal(y,float(nwi_others_accuracy),1))
-						# Add new points to ring
-						ring_prime.AddPoint(x_prime,y_prime)
+			valid = poly_prime.IsValid()
 
-					# Close new ring and add to polygon
-					ring_prime.CloseRings()
-					poly_prime.AddGeometry(ring_prime)
-
-				valid = poly_prime.IsValid()
-
-			# Add new poly to multipoly
-			multipoly_prime.AddGeometry(poly_prime)
-
-		# Write polygon to shapefile
-		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
-		wwi_prime_feature.SetGeometry(multipoly_prime)  # Create geometry
-		wwi_prime_feature.SetFID(fid)  # Set fid
-		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
-		fid += 1  # Add one to the fid
+	# Write polygon to shapefile
+	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+	wwi_prime_feature.SetFID(fid)  # Set fid
+	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+	fid += 1  # Add one to the fid
 
 	# End introduce error ----------------------------------------------------------
 
