@@ -14,17 +14,17 @@ import numpy, os, sys, shutil, gdalconst, csv
 #----------------
 # User Variables
 #----------------
-interations = 1
+interations = 10
 pls_accuracy = 15.24#/3  # Standard deviation of positional accuracy in meters
 wwi_ortho_accuracy = 5/3
 wwi_nonortho_accuracy = 15/3
 nwi_lacrosse_accuracy = 6/3
 nwi_others_accuracy = 15/3
-pls_path = "temp2/pls.shp"
-wwi_ortho_path = "temp2/wwi_ortho_dissolve2_simp1.0.shp"
-wwi_nonortho_path = "temp2/wwi_nonortho_dissolve2_simp20.0.shp"
-nwi_lacrosse_path = "temp2/nwi_lacrosse_dissolve2_simp1.0.shp"
-nwi_others_path = "temp2/nwi_others_dissolve2_simp20.0.shp"
+pls_path = "data/test_area/pls.shp"
+wwi_ortho_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
+wwi_nonortho_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
+nwi_lacrosse_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
+nwi_others_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
 output_dir = "output/"
 suppress_ogr_errors = True  # ogr.IsValid() is used to check for valid geom and causes many warnings, suppressing them should increase speed, use False for debug
 #----------------
@@ -129,7 +129,7 @@ if wwi_nonortho_source is None:
 wwi_nonortho_layer = wwi_nonortho_source.GetLayer(0)
 
 # Get one feature to get geom ref later
-wwi_nonortho_feature = wwi_ortho_layer.GetFeature(0)
+wwi_nonortho_feature = wwi_nonortho_layer.GetFeature(0)
 
 # Feature count
 featureCount3 = wwi_nonortho_layer.GetFeatureCount()
@@ -271,7 +271,6 @@ for iteration in range(0,interations):
 		valid = False
 		while (not valid):
 			poly_prime = None
-			# Iterate over each linear ring in polygon
 			poly_prime = ogr.Geometry(ogr.wkbPolygon)
 
 			# Iterate over each linear ring in polygon
@@ -296,12 +295,12 @@ for iteration in range(0,interations):
 
 			valid = poly_prime.IsValid()
 
-	# Write polygon to shapefile
-	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
-	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
-	wwi_prime_feature.SetFID(fid)  # Set fid
-	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
-	fid += 1  # Add one to the fid
+		# Write polygon to shapefile
+		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+		wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+		wwi_prime_feature.SetFID(fid)  # Set fid
+		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+		fid += 1  # Add one to the fid
 	
 	wwi_prime_feature = None
 
@@ -342,12 +341,12 @@ for iteration in range(0,interations):
 
 			valid = poly_prime.IsValid()
 
-	# Write polygon to shapefile
-	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
-	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
-	wwi_prime_feature.SetFID(fid)  # Set fid
-	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
-	fid += 1  # Add one to the fid
+		# Write polygon to shapefile
+		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+		wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+		wwi_prime_feature.SetFID(fid)  # Set fid
+		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+		fid += 1  # Add one to the fid
 
 	wwi_prime_feature = None
 	#------------------------------
@@ -387,12 +386,12 @@ for iteration in range(0,interations):
 
 			valid = poly_prime.IsValid()
 
-	# Write polygon to shapefile
-	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
-	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
-	wwi_prime_feature.SetFID(fid)  # Set fid
-	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
-	fid += 1  # Add one to the fid
+		# Write polygon to shapefile
+		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+		wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+		wwi_prime_feature.SetFID(fid)  # Set fid
+		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+		fid += 1  # Add one to the fid
 
 	wwi_prime_feature = None
 	#------------------------------
@@ -401,13 +400,13 @@ for iteration in range(0,interations):
 	# Iterate over each feature
 	for i in range(0, featureCount5):
 		# Get WWI feature and set geom refs
+		poly_feature = nwi_others_layer.GetFeature(i)
 		poly = poly_feature.GetGeometryRef()
 		
 		valid = False
 		while (not valid):
 			poly_prime = None
 			# Iterate over each linear ring in polygon
-			poly = multipoly.GetGeometryRef(i)
 			poly_prime = ogr.Geometry(ogr.wkbPolygon)
 
 			# Iterate over each linear ring in polygon
@@ -432,12 +431,12 @@ for iteration in range(0,interations):
 
 			valid = poly_prime.IsValid()
 
-	# Write polygon to shapefile
-	wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
-	wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
-	wwi_prime_feature.SetFID(fid)  # Set fid
-	wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
-	fid += 1  # Add one to the fid
+		# Write polygon to shapefile
+		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
+		wwi_prime_feature.SetGeometry(poly_prime)  # Create geometry
+		wwi_prime_feature.SetFID(fid)  # Set fid
+		wwi_prime.CreateFeature(wwi_prime_feature)  # Add feature to layer
+		fid += 1  # Add one to the fid
 
 	# End introduce error ----------------------------------------------------------
 
