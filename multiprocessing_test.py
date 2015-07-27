@@ -3,7 +3,7 @@ import multiprocessing,random
 def worker(num):
 	"""thread worker function"""
 	x = random.randint(1,10000)
-	print 'Worker:', num ,"\t",
+	print 'Worker:', num ,"\t"
 	for y in range(0,x): print y,
 	print ""
 	return

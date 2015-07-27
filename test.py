@@ -1,23 +1,22 @@
-import multiprocessing,random
+import multiprocessing,random,time
+
+iteration = 10
 
 def worker(num):
 	"""thread worker function"""
-	x = random.randint(1,100)
-	print 'Worker:', num ,"\t",
-	for y in range(0,x): print y,
-	print var1
-	print ""
+	x = random.randint(1,10)
+	time.sleep(x)
+	vars()["foo"+str(num)] = 1
+	print 'Worker:', num ,"sleep:",x,"foo:",vars()["foo"+str(num)]
 	return
 
 print "Before main"
 
-var1 = "Variable 1"
 jobs = []
-for i in range(10):
+for i in range(iteration):
 	p = multiprocessing.Process(target=worker, args=(i,))
 	jobs.append(p)
 	p.start()
-	p.join()
-
+	#p.join()
 
 print "After main"

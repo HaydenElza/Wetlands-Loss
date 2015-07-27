@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.8.1-alpha1" last-position="1,0" last-zoom="1"
+	 default-schema="public" default-owner="postgres">
+<database name="new_database">
+</database>
+
+<schema name="public" protected="true" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<table name="results">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="702" y="267"/>
+	<column name="corn_id" not-null="true">
+		<type name="char" length="11"/>
+	</column>
+	<column name="lost" not-null="true">
+		<type name="bit"/>
+	</column>
+	<column name="iter" not-null="true">
+		<type name="varchar" length="10"/>
+	</column>
+	<constraint name="pkey_cornid_iter" type="pk-constr" table="public.results">
+		<columns names="corn_id,iter" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="desc">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="402" y="266"/>
+	<column name="corn_id" not-null="true">
+		<type name="char" length="11"/>
+	</column>
+	<column name="eco" not-null="true">
+		<type name="bit"/>
+	</column>
+	<column name="county" not-null="true">
+		<type name="varchar" length="3"/>
+	</column>
+	<column name="veg" not-null="true">
+		<type name="char"/>
+	</column>
+	<column name="nlcd" not-null="true">
+		<type name="char" length="2"/>
+	</column>
+	<constraint name="pkey_cornid" type="pk-constr" table="public.desc">
+		<columns names="corn_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="eco">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="74" y="191"/>
+	<column name="eco_code" not-null="true">
+		<type name="bit"/>
+	</column>
+	<column name="eco_desc" not-null="true">
+		<type name="char" length="5"/>
+	</column>
+	<constraint name="pkey_eco" type="pk-constr" table="public.eco">
+		<columns names="eco_code" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="county">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="22" y="256"/>
+	<column name="county_code" not-null="true">
+		<type name="char" length="3"/>
+	</column>
+	<column name="county_desc" not-null="true">
+		<type name="varchar" length="11"/>
+	</column>
+	<constraint name="pkey_county" type="pk-constr" table="public.county">
+		<columns names="county_code" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="vegtype">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="14" y="325"/>
+	<column name="vegtype_code" not-null="true">
+		<type name="char"/>
+	</column>
+	<column name="vegtype_desc" not-null="true">
+		<type name="varchar" length="22"/>
+	</column>
+	<constraint name="pkey_vegtype" type="pk-constr" table="public.vegtype">
+		<columns names="vegtype_code" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="nlcd">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="39" y="392"/>
+	<column name="nlcd_code" not-null="true">
+		<type name="char" length="2"/>
+	</column>
+	<column name="nlcd_desc" not-null="true">
+		<type name="varchar" length="28"/>
+	</column>
+	<constraint name="pkey_nlcd" type="pk-constr" table="public.nlcd">
+		<columns names="nlcd_code" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="lost">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="1032" y="281"/>
+	<column name="lost_code" not-null="true">
+		<type name="bit"/>
+	</column>
+	<column name="lost_desc" not-null="true">
+		<type name="varchar" length="8"/>
+	</column>
+	<constraint name="pkey_lost" type="pk-constr" table="public.lost">
+		<columns names="lost_code" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<constraint name="fkey_cornid" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.desc" table="public.results">
+	<columns names="corn_id" ref-type="src-columns"/>
+	<columns names="corn_id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fkey_lost" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.lost" table="public.results">
+	<columns names="lost" ref-type="src-columns"/>
+	<columns names="lost_code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fkey_eco" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.eco" table="public.desc">
+	<columns names="eco" ref-type="src-columns"/>
+	<columns names="eco_code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fkey_county" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.county" table="public.desc">
+	<columns names="county" ref-type="src-columns"/>
+	<columns names="county_code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fkey_vegtype" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.vegtype" table="public.desc">
+	<columns names="veg" ref-type="src-columns"/>
+	<columns names="vegtype_code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fkey_nlcd" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.nlcd" table="public.desc">
+	<columns names="nlcd" ref-type="src-columns"/>
+	<columns names="nlcd_code" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="&quot;rel_Results_Desc&quot;" type="relfk"
+	 src-table="public.results"
+	 dst-table="public.desc"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="&quot;rel_Desc_Eco&quot;" type="relfk"
+	 src-table="public.desc"
+	 dst-table="public.eco"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="&quot;rel_Desc_County&quot;" type="relfk"
+	 src-table="public.desc"
+	 dst-table="public.county"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="&quot;rel_Desc_Vegtype&quot;" type="relfk"
+	 src-table="public.desc"
+	 dst-table="public.vegtype"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="&quot;rel_Desc_NLCD&quot;" type="relfk"
+	 src-table="public.desc"
+	 dst-table="public.nlcd"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="&quot;rel_Results_Lost&quot;" type="relfk"
+	 src-table="public.results"
+	 dst-table="public.lost"
+	 src-required="false" dst-required="false"/>
+
+</dbmodel>
