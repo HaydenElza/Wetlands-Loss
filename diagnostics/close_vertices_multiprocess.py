@@ -10,6 +10,7 @@ except:
 # Import other needed modules
 import os, sys, gdalconst, csv, numpy, multiprocessing
 
+num_processes = 12
 
 # Set working directory
 #path = sys.path[0]  # Windows
@@ -17,7 +18,7 @@ import os, sys, gdalconst, csv, numpy, multiprocessing
 wd = os.path.dirname("/home/babykitty/Work/Wetlands-Loss/")
 
 # Set shapefile path
-shp_file = "data/test_area/wwi.shp"
+shp_file = "data/test_state/wwi_ortho.shp"
 shp_path = os.path.join(wd, shp_file)
 
 
@@ -43,6 +44,12 @@ if os.path.isfile(csv_path):
 	sys.exit(-1)
 
 
+def assign_tasks(c,n):
+	l = list(range(0,c))
+	chunk_size = int(numpy.ceil(float(c)/n))
+	feature_lists = [l[foo:foo+chunk_size] for foo in range(0,c,chunk_size)]
+	return feature_lists
+
 def writer(csv_path,queue,stop_token):
 	with open(csv_path,"a") as csv_out:
 		while True:
@@ -50,37 +57,39 @@ def writer(csv_path,queue,stop_token):
 			if line == stop_token: return
 			csv_out.write(line)
 
-def dist_between_points(i):
+def dist_between_points(feature_list):
 
-	driver = ogr.GetDriverByName('ESRI Shapefile')  # Get appropriate driver
-	shp_source = driver.Open(shp_path, gdalconst.GA_ReadOnly)  # Open the file using the drive
-	shp_layer = shp_source.GetLayer(0)  # Get first layer
-	feature_count = shp_layer.GetFeatureCount()  # Feature count
+	for i in feature_list:  # Iterate over each feature
 
-	#for i in range(0,feature_count):  # Iterate over each feature
-	lines = []  # Create empty list lines to write to csv
+		driver = ogr.GetDriverByName('ESRI Shapefile')  # Get appropriate driver
+		shp_source = driver.Open(shp_path, gdalconst.GA_ReadOnly)  # Open the file using the drive
+		shp_layer = shp_source.GetLayer(0)  # Get first layer
+		feature_count = shp_layer.GetFeatureCount()  # Feature count
 
-	# Get shapefile feature and set geom refs
-	poly_feature = shp_layer.GetFeature(i)
-	poly = poly_feature.GetGeometryRef()
+		#for i in range(0,feature_count):  # Iterate over each feature
+		lines = []  # Create empty list lines to write to csv
 
-	for linearring in range(0,poly.GetGeometryCount()):  # Iterate over each linear ring in polygon
-		ring = poly.GetGeometryRef(linearring)
+		# Get shapefile feature and set geom refs
+		poly_feature = shp_layer.GetFeature(i)
+		poly = poly_feature.GetGeometryRef()
 
-		for point in range(0,ring.GetPointCount()):  # Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-			x,y,z = ring.GetPoint(point)
-			lines.append([i,x,y])
+		for linearring in range(0,poly.GetGeometryCount()):  # Iterate over each linear ring in polygon
+			ring = poly.GetGeometryRef(linearring)
 
-	# Distance between points
-	for j in range(0,len(lines)):
-		if not j == len(lines)-1:  # Normal case: distance between point and next point
-			d = numpy.sqrt(((lines[j][1]-lines[j+1][1])**2)+((lines[j][2]-lines[j+1][2])**2))
-			lines[j].append(d)
-			queue.put(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[j][3])+"\n")	
-		else:  # Special case: distance between last point and first point
-			d = str(numpy.sqrt(((lines[j][1]-lines[0][1])**2)+((lines[j][2]-lines[0][2])**2)))
-			lines[j].append(d)
-			queue.put(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[j][3])+"\n")			
+			for point in range(0,ring.GetPointCount()):  # Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
+				x,y,z = ring.GetPoint(point)
+				lines.append([i,x,y])
+
+		# Distance between points
+		for j in range(0,len(lines)):
+			if not j == len(lines)-1:  # Normal case: distance between point and next point
+				d = numpy.sqrt(((lines[j][1]-lines[j+1][1])**2)+((lines[j][2]-lines[j+1][2])**2))
+				lines[j].append(d)
+				queue.put(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[j][3])+"\n")	
+			else:  # Special case: distance between last point and first point
+				d = str(numpy.sqrt(((lines[j][1]-lines[0][1])**2)+((lines[j][2]-lines[0][2])**2)))
+				lines[j].append(d)
+				queue.put(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[j][3])+"\n")			
 
 
 try:
@@ -91,9 +100,9 @@ try:
 	writer_process.start()
 
 	# Create pool and run processes
-	feature_list = list(range(0,feature_count))
-	pool = multiprocessing.Pool(12)
-	pool.map(dist_between_points,feature_list)
+	feature_lists = assign_tasks(feature_count,num_processes)
+	pool = multiprocessing.Pool(processes=num_processes)
+	pool.map(dist_between_points,feature_lists)
 	# Wait for all processes to finish
 	pool.close()
 	pool.join()
