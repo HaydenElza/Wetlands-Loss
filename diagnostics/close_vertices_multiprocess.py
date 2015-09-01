@@ -82,20 +82,26 @@ def dist_between_points(i):
 			lines[j].append(d)
 			queue.put(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[j][3])+"\n")			
 
-# Create writer process to write queued results
-queue = multiprocessing.Queue()
-stop_token = "STOP"
-writer_process = multiprocessing.Process(target=writer, args=(csv_path,queue,stop_token))
-writer_process.start()
 
-# Create pool and run processes
-feature_list = list(range(0,feature_count))
-pool = multiprocessing.Pool(12)
-pool.map(dist_between_points,feature_list)
-# Wait for all processes to finish
-pool.close()
-pool.join()
+try:
+	# Create writer process to write queued results
+	queue = multiprocessing.Queue()
+	stop_token = "STOP"
+	writer_process = multiprocessing.Process(target=writer, args=(csv_path,queue,stop_token))
+	writer_process.start()
 
-# Signal writer to stop
-queue.put(stop_token)
-writer_process.join()
+	# Create pool and run processes
+	feature_list = list(range(0,feature_count))
+	pool = multiprocessing.Pool(12)
+	pool.map(dist_between_points,feature_list)
+	# Wait for all processes to finish
+	pool.close()
+	pool.join()
+
+	# Signal writer to stop
+	queue.put(stop_token)
+	writer_process.join()
+
+except KeyboardInterrupt:
+	print "Exiting..."
+	pool.terminate()

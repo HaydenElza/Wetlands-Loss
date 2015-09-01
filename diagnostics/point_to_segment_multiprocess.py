@@ -72,26 +72,32 @@ with open(input_csv_path,"rb") as input_csv:
 	features = [[line for line in lines if line[0]==fid] for fid in fids]
 	print "Sets created. Calculating minimum distance to segment...",str(datetime.now())
 
-# Create writer process to write queued results
-queue = multiprocessing.Queue()
-stop_token = "STOP"
-writer_process = multiprocessing.Process(target=writer, args=(output_csv_path,queue,stop_token))
-writer_process.start()
 
-# Create pool and run processes
-feature_list = list(range(0,len(features)))
-pool = multiprocessing.Pool(12)
-pool.map(iterate_through_feature,feature_list)
-# Wait for all processes to finish
-pool.close()
-pool.join()
+try:
+	# Create writer process to write queued results
+	queue = multiprocessing.Queue()
+	stop_token = "STOP"
+	writer_process = multiprocessing.Process(target=writer, args=(output_csv_path,queue,stop_token))
+	writer_process.start()
 
-# Signal writer to stop
-queue.put(stop_token)
-writer_process.join()
+	# Create pool and run processes
+	feature_list = list(range(0,len(features)))
+	pool = multiprocessing.Pool(12)
+	pool.map(iterate_through_feature,feature_list)
+	# Wait for all processes to finish
+	pool.close()
+	pool.join()
 
+	# Signal writer to stop
+	queue.put(stop_token)
+	writer_process.join()
 
-print "Finished.                                               ",str(datetime.now())
+	print "Finished.                                               ",str(datetime.now())
 
-# Close csv
-input_csv.close()
+	# Close csv
+	input_csv.close()
+
+except KeyboardInterrupt:
+	print "Exiting..."
+	pool.terminate()
+	input_csv.close()  # Close csv
