@@ -20,10 +20,11 @@ if os.path.isfile(output_csv_path):
 def assign_tasks(c,n):
 	l = list(range(0,c))
 	chunk_size = int(numpy.ceil(float(c)/n))
-	feature_lists = [l[foo:foo+chunk_size] for foo in range(0,c,chunk_size)]
+	feature_lists = [(",".join([str(foo) for foo in foo])) for foo in [l[foo:foo+chunk_size] for foo in range(0,c,chunk_size)]]
 	return feature_lists
 
 def iterate_through_feature(feature_list):
+	feature_list = [int(foo) for foo in feature_list.split(",")]  # Convert feature_list to list
 	for i in feature_list:  # Iterate over each feature
 		feature = features[i]
 		for j in range(0,len(feature)):  # For each vertex, grab vertex and next vertex
