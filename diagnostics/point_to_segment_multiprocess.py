@@ -3,6 +3,7 @@ import os, sys, csv, numpy, multiprocessing
 from datetime import datetime
 
 # User variables
+num_processes = 12
 threshold = 20
 input_csv_path = "/home/babykitty/Work/Wetlands-Loss/vertices.csv"  # This input needs to be the output of close_vertices.py
 output_csv_path = "/home/babykitty/Work/Wetlands-Loss/min_dist_to_segments.csv"
@@ -16,20 +17,27 @@ if os.path.isfile(output_csv_path):
 	sys.exit(-1)
 
 
-def iterate_through_feature(i):
-	feature = features[i]
-	for j in range(0,len(feature)):  # For each vertex, grab vertex and next vertex
-		if not j == len(feature)-1:  # Normal case: distance between point and next point
-			for h in range(0,len(feature)):  # For each vertex other than the two that make the segment
-				if (h != j and h != j+1):
-					min_dist = min_dist_to_line(feature[h],feature[j],feature[j+1])
-					if min_dist < threshold: queue.put(str(i)+"\t"+str(j)+"\t"+str(j+1)+"\t"+str(h)+"\t"+str(min_dist)+"\n")
+def assign_tasks(c,n):
+	l = list(range(0,c))
+	chunk_size = int(numpy.ceil(float(c)/n))
+	feature_lists = [l[foo:foo+chunk_size] for foo in range(0,c,chunk_size)]
+	return feature_lists
 
-		else:  # Special case: distance between last point and first point
-			for h in range(0,len(feature)):
-				if (h != j and h != 0):
-					min_dist = min_dist_to_line(feature[h],feature[j],feature[0])
-					if min_dist < threshold: queue.put(str(i)+"\t"+str(j)+"\t"+str(0)+"\t"+str(h)+"\t"+str(min_dist)+"\n")
+def iterate_through_feature(feature_list):
+	for i in feature_list:  # Iterate over each feature
+		feature = features[i]
+		for j in range(0,len(feature)):  # For each vertex, grab vertex and next vertex
+			if not j == len(feature)-1:  # Normal case: distance between point and next point
+				for h in range(0,len(feature)):  # For each vertex other than the two that make the segment
+					if (h != j and h != j+1):
+						min_dist = min_dist_to_line(feature[h],feature[j],feature[j+1])
+						if min_dist < threshold: queue.put(str(i)+"\t"+str(j)+"\t"+str(j+1)+"\t"+str(h)+"\t"+str(min_dist)+"\n")
+
+			else:  # Special case: distance between last point and first point
+				for h in range(0,len(feature)):
+					if (h != j and h != 0):
+						min_dist = min_dist_to_line(feature[h],feature[j],feature[0])
+						if min_dist < threshold: queue.put(str(i)+"\t"+str(j)+"\t"+str(0)+"\t"+str(h)+"\t"+str(min_dist)+"\n")
 
 def min_dist_to_line(v_0,v_1,v_2):
 	# x,y for each vertex
@@ -74,16 +82,16 @@ with open(input_csv_path,"rb") as input_csv:
 
 
 try:
-	# Create writer process to write queued results
+# Create writer process to write queued results
 	queue = multiprocessing.Queue()
 	stop_token = "STOP"
 	writer_process = multiprocessing.Process(target=writer, args=(output_csv_path,queue,stop_token))
 	writer_process.start()
 
 	# Create pool and run processes
-	feature_list = list(range(0,len(features)))
-	pool = multiprocessing.Pool(12)
-	pool.map(iterate_through_feature,feature_list)
+	feature_lists = assign_tasks(len(features),num_processes)
+	pool = multiprocessing.Pool(processes=num_processes)
+	pool.map(iterate_through_feature,feature_lists)
 	# Wait for all processes to finish
 	pool.close()
 	pool.join()

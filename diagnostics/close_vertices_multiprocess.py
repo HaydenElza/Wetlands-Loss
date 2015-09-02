@@ -18,7 +18,7 @@ num_processes = 12
 wd = os.path.dirname("/home/babykitty/Work/Wetlands-Loss/")
 
 # Set shapefile path
-shp_file = "data/test_state/wwi_ortho.shp"
+shp_file = "data/test_area/wwi.shp"
 shp_path = os.path.join(wd, shp_file)
 
 
