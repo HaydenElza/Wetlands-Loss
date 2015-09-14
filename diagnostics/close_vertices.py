@@ -16,7 +16,7 @@ wd = os.path.dirname(__file__)  # Linux
 wd = os.path.dirname("/home/babykitty/Work/Wetlands-Loss/")
 
 # Set shapefile path
-shp_file = "data/test_area/wwi.shp"
+shp_file = "data/test_area/wwi_dissolve2_simp2.0.shp"
 shp_path = os.path.join(wd, shp_file)
 
 #------------------------
