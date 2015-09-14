@@ -104,6 +104,7 @@ for i in range(0,feature_count):  # Iterate over each feature
 			else: dist(ring,ring_out,point,0,ring_out)  # On the last vertex of ring, distance to first non-removed vertex which can be found in "ring out"		
 
 		ring_out.CloseRings()  # Make sure rings are closed.
+		if ring_out.GetPointCount() < 4: continue  # Rings with less than four vertices are considered invalid topology
 		poly_out.AddGeometry(ring_out)
 
 	# Write polygon to shapefile
