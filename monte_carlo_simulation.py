@@ -453,28 +453,26 @@ for iteration in range(0,interations):
 
 	# Iterate through point features to find where points intersect WWI
 	for i in range(0, featureCount1):
+		for j in range(0, wwi_prime.GetFeatureCount()):
+			# Get PLS feature and set geom refs
+			point_feature = pls_prime.GetFeature(i)
+			point = point_feature.GetGeometryRef()
+			wwi_prime_feature = wwi_prime.GetFeature(j)
+			poly = wwi_prime_feature.GetGeometryRef()
 
-		# Get PLS feature and set geom refs
-		point_feature = pls_prime.GetFeature(i)
-		point = point_feature.GetGeometryRef()
-		poly = wwi_prime_feature.GetGeometryRef()
+			# Check if WWI intersects PLS point
+			cross = poly.Intersects(point)
 
-		# Check if WWI intersects PLS point
-		cross = poly.Intersects(point)
-
-		# Count the number of intersects or nots
-		geometry = point_feature.GetGeometryRef()
-		if cross:
-			TrueCount = TrueCount + 1
-
-			# Add line to csv
-			csv_out.write(str(point_feature.GetField("CORN_ID"))[:11]+",1,"+str(iteration)+"\n")
-
-		else:
-			FalseCount = FalseCount + 1
+			# Count the number of intersects or nots
+			geometry = point_feature.GetGeometryRef()
+			if cross:
+				TrueCount = TrueCount + 1
+				# Add line to csv
+				csv_out.write(str(point_feature.GetField("CORN_ID"))[:11]+",1,"+str(iteration)+"\n")
+				break
 
 	# Iteration summary
-	print str(iteration)+"\t"+str(TrueCount)+"\t"+str(FalseCount)+"\t"+str(TrueCount+FalseCount)
+	print str(iteration)+"\t"+str(TrueCount)+"\t"+str(featureCount1-TrueCount)+"\t"+str(featureCount1)
 
 
 	# Close csv
