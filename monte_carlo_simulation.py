@@ -280,7 +280,7 @@ for iteration in range(0,interations):
 				ring_prime = ogr.Geometry(ogr.wkbLinearRing)
 
 				# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-				for point in range(0,ring.GetPointCount()):
+				for point in range(0,ring.GetPointCount()-1):
 					# Get coordinates from point
 					x,y,z = ring.GetPoint(point)
 					# Create new points randomly sampled from gaussian distribution
@@ -326,7 +326,7 @@ for iteration in range(0,interations):
 				ring_prime = ogr.Geometry(ogr.wkbLinearRing)
 
 				# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-				for point in range(0,ring.GetPointCount()):
+				for point in range(0,ring.GetPointCount()-1):
 					# Get coordinates from point
 					x,y,z = ring.GetPoint(point)
 					# Create new points randomly sampled from gaussian distribution
@@ -371,7 +371,7 @@ for iteration in range(0,interations):
 				ring_prime = ogr.Geometry(ogr.wkbLinearRing)
 
 				# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-				for point in range(0,ring.GetPointCount()):
+				for point in range(0,ring.GetPointCount()-1):
 					# Get coordinates from point
 					x,y,z = ring.GetPoint(point)
 					# Create new points randomly sampled from gaussian distribution
@@ -416,7 +416,7 @@ for iteration in range(0,interations):
 				ring_prime = ogr.Geometry(ogr.wkbLinearRing)
 
 				# Iterate over each point in linear ring, create new points randomly sampled from gaussian distribution
-				for point in range(0,ring.GetPointCount()):
+				for point in range(0,ring.GetPointCount()-1):
 					# Get coordinates from point
 					x,y,z = ring.GetPoint(point)
 					# Create new points randomly sampled from gaussian distribution

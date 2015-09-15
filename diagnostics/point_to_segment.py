@@ -34,11 +34,16 @@ def min_dist_to_line(v_0,v_1,v_2):
 	# Find vertex 3, i.e., the intersection of the two lines
 	x_3 = (b_03-b_12)/(m_12-m_03)
 	y_3 = (m_03*x_3)+b_03
-	# Distance from vertex 3 to line
+	# Distance from vertex 0 to line, i.e., vertex 3
 	d_line = numpy.sqrt(((x_0-x_3)**2)+((y_0-y_3)**2))
-	# Distance from vertext 3 to vertices 1 and 2
-	d_v_1,d_v_2 = numpy.sqrt(((x_0-x_1)**2)+((y_0-y_1)**2)),numpy.sqrt(((x_0-x_2)**2)+((y_0-y_2)**2))
-	return min(d_line,d_v_1,d_v_2)
+	# Check that vertex 3 is along segment conecting vertices 1 and 2
+	if ((min(x_1,x_2) < x_3 < max(x_1,x_2)) and (min(y_1,y_2) < y_3 < max(y_1,y_2))):
+		return d_line
+	else:  # If vertex 3 is not within bounding box of vertices 1 and 2 then it must not lie on segment, distance to segment is then the distance to the closest vertex of segment
+		# Distance from vertext 0 to vertices 1 and 2
+		d_v_1,d_v_2 = numpy.sqrt(((x_0-x_1)**2)+((y_0-y_1)**2)),numpy.sqrt(((x_0-x_2)**2)+((y_0-y_2)**2))
+		return min(d_v_1,d_v_2)
+	
 
 # Open input csv file
 with open(input_csv_path,"rb") as input_csv:
