@@ -14,17 +14,17 @@ import numpy, os, sys, shutil, gdalconst, csv
 #----------------
 # User Variables
 #----------------
-interations = 10
+interations = 1
 pls_accuracy = 15.24#/3  # Standard deviation of positional accuracy in meters
 wwi_ortho_accuracy = 5/3
 wwi_nonortho_accuracy = 15/3
 nwi_lacrosse_accuracy = 6/3
 nwi_others_accuracy = 15/3
-pls_path = "data/test_area/pls.shp"
-wwi_ortho_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
-wwi_nonortho_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
-nwi_lacrosse_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
-nwi_others_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
+pls_path = "data/test_state2/pls.shp"
+wwi_ortho_path = "data/test_state2/wwi_ortho_dissolve_nomultipart_simp5_forced_simplify.shp"
+wwi_nonortho_path = "data/test_state2/wwi_nonortho_simp20.shp"
+nwi_lacrosse_path = "data/test_state2/nwi_lacrosse_dissolve_simp6.shp"
+nwi_others_path = "data/test_state2/nwi_others_simp20.shp"
 output_dir = "output/"
 suppress_ogr_errors = True  # ogr.IsValid() is used to check for valid geom and causes many warnings, suppressing them should increase speed, use False for debug
 #----------------
@@ -293,7 +293,7 @@ for iteration in range(0,interations):
 				ring_prime.CloseRings()
 				poly_prime.AddGeometry(ring_prime)
 
-			valid = poly_prime.IsValid()
+			valid = True #poly_prime.IsValid()
 
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
@@ -339,7 +339,7 @@ for iteration in range(0,interations):
 				ring_prime.CloseRings()
 				poly_prime.AddGeometry(ring_prime)
 
-			valid = poly_prime.IsValid()
+			valid = True #poly_prime.IsValid()
 
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
@@ -384,7 +384,7 @@ for iteration in range(0,interations):
 				ring_prime.CloseRings()
 				poly_prime.AddGeometry(ring_prime)
 
-			valid = poly_prime.IsValid()
+			valid = True #poly_prime.IsValid()
 
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
@@ -429,7 +429,7 @@ for iteration in range(0,interations):
 				ring_prime.CloseRings()
 				poly_prime.AddGeometry(ring_prime)
 
-			valid = poly_prime.IsValid()
+			valid = True #poly_prime.IsValid()
 
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature

@@ -70,11 +70,11 @@ for i in range(0,feature_count):  # Iterate over each feature
 		if not j == len(lines)-1:  # Normal case: distance between point and next point
 			d = numpy.sqrt(((lines[j][1]-lines[j+1][1])**2)+((lines[j][2]-lines[j+1][2])**2))
 			lines[j].append(d)
-			csv_out.write(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[j][3])+"\n")	
+			csv_out.write(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[j+1][1])+"\t"+str(lines[j+1][2])+"\t"+str(lines[j][3])+"\n")  # print i,x1,y1,x2,y2,distance between points 1 and 2
 		else:  # Special case: distance between last point and first point
 			d = str(numpy.sqrt(((lines[j][1]-lines[0][1])**2)+((lines[j][2]-lines[0][2])**2)))
 			lines[j].append(d)
-			csv_out.write(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[j][3])+"\n")			
+			csv_out.write(str(lines[j][0])+"\t"+str(lines[j][1])+"\t"+str(lines[j][2])+"\t"+str(lines[0][1])+"\t"+str(lines[0][2])+"\t"+str(lines[j][3])+"\n")  # print i,x1,y1,x2,y2,distance between points 1 and 2	
 
 # Close csv
 csv_out.close()
