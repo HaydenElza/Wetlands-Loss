@@ -14,17 +14,17 @@ import numpy, os, sys, shutil, gdalconst, csv
 #----------------
 # User Variables
 #----------------
-interations = 1
+interations = 10
 pls_accuracy = 15.24#/3  # Standard deviation of positional accuracy in meters
 wwi_ortho_accuracy = 5/3
 wwi_nonortho_accuracy = 15/3
 nwi_lacrosse_accuracy = 6/3
 nwi_others_accuracy = 15/3
-pls_path = "data/test_state2/pls.shp"
-wwi_ortho_path = "data/test_state2/wwi_ortho_dissolve_nomultipart_simp5_forced_simplify.shp"
-wwi_nonortho_path = "data/test_state2/wwi_ortho_dissolve_nomultipart_simp5_forced_simplify.shp"
-nwi_lacrosse_path = "data/test_state2/wwi_ortho_dissolve_nomultipart_simp5_forced_simplify.shp"
-nwi_others_path = "data/test_state2/wwi_ortho_dissolve_nomultipart_simp5_forced_simplify.shp"
+pls_path = "data/test_area/pls.shp"
+wwi_ortho_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
+wwi_nonortho_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
+nwi_lacrosse_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
+nwi_others_path = "data/test_area/wwi_dissolve2_simp2.0.shp"
 output_dir = "output/"
 suppress_ogr_errors = True  # ogr.IsValid() is used to check for valid geom and causes many warnings, suppressing them should increase speed, use False for debug
 #----------------
@@ -293,7 +293,7 @@ for iteration in range(0,interations):
 				ring_prime.CloseRings()
 				poly_prime.AddGeometry(ring_prime)
 
-			valid = True #poly_prime.IsValid()
+			valid = poly_prime.IsValid()
 
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
@@ -339,7 +339,7 @@ for iteration in range(0,interations):
 				ring_prime.CloseRings()
 				poly_prime.AddGeometry(ring_prime)
 
-			valid = True #poly_prime.IsValid()
+			valid = poly_prime.IsValid()
 
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
@@ -384,7 +384,7 @@ for iteration in range(0,interations):
 				ring_prime.CloseRings()
 				poly_prime.AddGeometry(ring_prime)
 
-			valid = True #poly_prime.IsValid()
+			valid = poly_prime.IsValid()
 
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
@@ -429,7 +429,7 @@ for iteration in range(0,interations):
 				ring_prime.CloseRings()
 				poly_prime.AddGeometry(ring_prime)
 
-			valid = True #poly_prime.IsValid()
+			valid = poly_prime.IsValid()
 
 		# Write polygon to shapefile
 		wwi_prime_feature = ogr.Feature(wwi_prime_def)  # Create empty feature
@@ -459,7 +459,6 @@ for iteration in range(0,interations):
 			point = point_feature.GetGeometryRef()
 			wwi_prime_feature = wwi_prime.GetFeature(j)
 			poly = wwi_prime_feature.GetGeometryRef()
-			if poly is None: continue
 
 			# Check if WWI intersects PLS point
 			cross = poly.Intersects(point)
@@ -468,9 +467,10 @@ for iteration in range(0,interations):
 			geometry = point_feature.GetGeometryRef()
 			if cross:
 				TrueCount = TrueCount + 1
+
 				# Add line to csv
 				csv_out.write(str(point_feature.GetField("CORN_ID"))[:11]+",1,"+str(iteration)+"\n")
-				break
+				
 
 	# Iteration summary
 	print str(iteration)+"\t"+str(TrueCount)+"\t"+str(featureCount1-TrueCount)+"\t"+str(featureCount1)
