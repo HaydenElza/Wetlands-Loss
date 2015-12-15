@@ -1,26 +1,26 @@
 import arcpy, arceditor, multiprocessing
 from sys import argv
+import os
 
 input_shp = argv[1]
 output_dir = argv[2]
-tolerance = argv[3]
-output_shp = output_dir+"simp.shp"
+tolerance = str(argv[3]) + " Meters"
+output_shp = os.path.join(output_dir,"simp.shp")
 merge_list = []
 
 def simplify(fid_range):
 	# Build file names
 	input_shp_select = output_dir+"_"+str(fid_range[0])+"_temp.shp"
-	output_shp_select = output_dir+"_"+str(fid_range[0])+".shp"
 
 	# Add file name to merge list and build select querry
-	merge_list.append(output_shp_select)
+	merge_list.append(input_shp_select)
 	where = '"FID" > '+str(fid_range[0])+' AND "FID" < '+str(fid_range[1])
 
 	# Select and Simplify
 	print "Selecting >>> FID:",fid_range[0]
 	arcpy.Select_analysis(input_shp, input_shp_select, where)
-	print "Simplifying >>> FID:",fid_range[0]
-	arcpy.SimplifyPolygon_cartography(input_shp_select, output_shp_select, "POINT_REMOVE", tolerance, "0 Unknown", "RESOLVE_ERRORS", "NO_KEEP")
+	print "Generalizing >>> FID:",fid_range[0]
+	arcpy.Generalize_edit(input_shp_select, tolerance)
 	print "Finished >>> FID:",fid_range[0]
 
 def main():
