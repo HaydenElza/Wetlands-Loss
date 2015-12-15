@@ -123,11 +123,11 @@ for i in range(0,feature_count):  # Iterate over each feature
 				for j in range(0,ring.GetPointCount()):
 					if (j != point and j != point+1):
 
-						dist(ring.GetPoint(j),ring.GetPoint(point),ring.GetPoint(point+1),ring_out)
+						min_dist_to_line(ring.GetPoint(j),ring.GetPoint(point),ring.GetPoint(point+1),ring_out)
 			else:
 				for j in range(0,ring.GetPointCount()):
 					if (j != point and j != 0):
-						dist(ring.GetPoint(j),ring.GetPoint(point),ring_out.GetPoint(0),ring.GetPoint(j),ring_out)  # On the last vertex of ring, distance to first non-removed vertex which can be found in "ring out"		
+						min_dist_to_line(ring.GetPoint(j),ring.GetPoint(point),ring_out.GetPoint(0),ring.GetPoint(j),ring_out)  # On the last vertex of ring, distance to first non-removed vertex which can be found in "ring out"		
 
 		ring_out.CloseRings()  # Make sure rings are closed.
 		if ring_out.GetPointCount() < 4: continue  # Rings with less than four vertices are considered invalid topology
